@@ -71,7 +71,9 @@ async function fetchWithTimeout(
   }
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+// In production, use Next.js rewrites for all API calls to ensure proper cookie handling
+// This avoids CORS issues and ensures cookies are sent correctly
+const API_BASE = "/api"; // All API calls go through Next.js proxy/rewrites
 
 export const apiClientFn = async ({
   url,
@@ -84,10 +86,9 @@ export const apiClientFn = async ({
     "Content-Type": "application/json",
   };
 
-  // Use Next.js proxy route for auth endpoints to ensure cookies are set correctly
-  // For other endpoints, use the backend URL directly
-  const isAuthEndpoint = url.startsWith("/api/auth");
-  const requestUrl = isAuthEndpoint ? url : `${API_URL}${url}`;
+  // All API calls go through Next.js to ensure cookies work correctly
+  // The Next.js rewrites in next.config.ts handle forwarding to the backend
+  const requestUrl = url.startsWith("/") ? url : `${API_BASE}${url}`;
 
   // JWT token is stored in httpOnly cookie
   // Browser sends it automatically, no need to add Authorization header
